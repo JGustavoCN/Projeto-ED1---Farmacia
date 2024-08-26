@@ -10,6 +10,7 @@ import javax.swing.JFrame;
 public class MainController {
     
     private JFrame telaAtual;
+    private final ProdutoController produtoController = ProdutoController.getInstance();
     
     public void logar(boolean respostaLoginController){
         if (respostaLoginController == false) return;
@@ -23,6 +24,10 @@ public class MainController {
 
     public void setTelaAtual(JFrame telaAtual) {
         this.telaAtual = telaAtual;
+    }
+    
+    public void salvarDados(){
+        produtoController.salvarDados();
     }
     
     private MainController() {

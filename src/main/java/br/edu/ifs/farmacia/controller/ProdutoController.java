@@ -19,6 +19,10 @@ public class ProdutoController {
         }
         return instance;
     }
+    
+    public void salvarDados(){
+        produtoRepository.salvarTodos();
+    }
 
     public boolean cadastrar(Produto produto) {
         try {

@@ -16,14 +16,14 @@ public class Produto implements Serializable {
     private int codigo;
     private String descricao;
     private String marca;
-    private int valorEntrada;
-    private int valorSaida;
-    private int quantidadeEstoque;
+    private double valorEntrada;
+    private double valorSaida;
+    private int quantidaDeEstoque;
 
     public Produto() {
     }
 
-    public Produto(String nome, int codigo, String descricao, String marca, int valorEntrada, int valorSaida, int quantidadeEstoque) {
+    public Produto(String nome, int codigo, String descricao, String marca, double valorEntrada, double valorSaida, int quantidaDeEstoque) {
         this.id = UUID.nameUUIDFromBytes((nome.trim()+marca.trim()).trim().toUpperCase().getBytes());
         this.nome = nome;
         this.codigo = codigo;
@@ -31,7 +31,7 @@ public class Produto implements Serializable {
         this.marca = marca;
         this.valorEntrada = valorEntrada;
         this.valorSaida = valorSaida;
-        this.quantidadeEstoque = quantidadeEstoque;
+        this.quantidaDeEstoque = quantidaDeEstoque;
     }
 
     public String getNome() {
@@ -66,28 +66,28 @@ public class Produto implements Serializable {
         this.marca = marca;
     }
 
-    public int getValorEntrada() {
+    public double getValorEntrada() {
         return valorEntrada;
     }
 
-    public void setValorEntrada(int valorEntrada) {
+    public void setValorEntrada(double valorEntrada) {
         this.valorEntrada = valorEntrada;
     }
 
-    public int getValorSaida() {
+    public double getValorSaida() {
         return valorSaida;
     }
 
-    public void setValorSaida(int valorSaida) {
+    public void setValorSaida(double valorSaida) {
         this.valorSaida = valorSaida;
     }
 
     public int getQuantidadeEstoque() {
-        return quantidadeEstoque;
+        return quantidaDeEstoque;
     }
 
-    public void setQuantidadeEstoque(int quantidadeEstoque) {
-        this.quantidadeEstoque = quantidadeEstoque;
+    public void setQuantidadeEstoque(int quantidaDeEstoque) {
+        this.quantidaDeEstoque = quantidaDeEstoque;
     }
 
     @Override
@@ -126,7 +126,7 @@ public class Produto implements Serializable {
 
     @Override
     public String toString() {
-        return "Produto{" + "nome=" + nome + ", codigo=" + codigo + ", descricao=" + descricao + ", marca=" + marca + ", valorEntrada=" + valorEntrada + ", valorSaida=" + valorSaida + ", quantidadeEstoque=" + quantidadeEstoque + '}';
+        return "Produto{" + "nome=" + nome + ", codigo=" + codigo + ", descricao=" + descricao + ", marca=" + marca + ", valorEntrada=" + valorEntrada + ", valorSaida=" + valorSaida + ", quantidaDeEstoque=" + quantidaDeEstoque + '}';
     }
 
 }

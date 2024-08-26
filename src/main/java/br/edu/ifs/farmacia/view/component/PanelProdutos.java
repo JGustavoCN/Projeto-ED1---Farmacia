@@ -2,7 +2,8 @@ package br.edu.ifs.farmacia.view.component;
 
 import br.edu.ifs.farmacia.controller.ProdutoController;
 import br.edu.ifs.farmacia.model.Produto;
-import br.edu.ifs.farmacia.repository.ProdutoRepository;
+import br.edu.ifs.farmacia.util.Lista;
+import br.edu.ifs.farmacia.util.ProdutoUtil;
 import br.edu.ifs.farmacia.view.swing.table.CheckBoxTableHeaderRenderer;
 import br.edu.ifs.farmacia.view.swing.table.TableHeaderAlignment;
 import com.formdev.flatlaf.FlatClientProperties;
@@ -20,13 +21,16 @@ import raven.toast.Notifications;
 public class PanelProdutos extends javax.swing.JPanel {
 
     private final ProdutoController produtoController;
-
+    
+    
     public PanelProdutos() {
         produtoController = ProdutoController.getInstance();
         initComponents();
         init();
     }
-
+    
+   
+    
     private void init() {
 
         panel.putClientProperty(FlatClientProperties.STYLE, ""
@@ -69,33 +73,21 @@ public class PanelProdutos extends javax.swing.JPanel {
 
         table.getColumnModel().getColumn(0).setHeaderRenderer(new CheckBoxTableHeaderRenderer(table, 0));
         table.getTableHeader().setDefaultRenderer(new TableHeaderAlignment(table));
-        testData();
+        loadData();
     }
 
-    private void testData() {
+    private void loadData() {
         DefaultTableModel model = (DefaultTableModel) table.getModel();
-
-        model.addRow(new Object[]{false, 1, 101, "Paracetamol", "MedCorp", "Analgesico e antipiretico", 100, 10, 15});
-        model.addRow(new Object[]{false, 2, 102, "Ibuprofeno", "HealthPlus", "Anti-inflamatorio", 200, 20, 30});
-        model.addRow(new Object[]{false, 3, 103, "Amoxicilina", "PharmaLab", "Antibiotico", 150, 25, 35});
-        model.addRow(new Object[]{false, 4, 104, "Lorazepam", "WellBeing", "Ansiolitico", 75, 40, 55});
-        model.addRow(new Object[]{false, 5, 105, "Metformina", "DrugBase", "Antidiabetico", 300, 35, 50});
-        model.addRow(new Object[]{false, 6, 106, "Cetirizina", "AllergyFree", "Antialergico", 120, 45, 60});
-        model.addRow(new Object[]{false, 7, 107, "Losartana", "CardioMed", "Antihipertensivo", 80, 55, 70});
-        model.addRow(new Object[]{false, 8, 108, "Simvastatina", "HeartCare", "Anticolesterolêmico", 90, 65, 80});
-        model.addRow(new Object[]{false, 9, 109, "Omeprazol", "DigestAid", "Antiacido", 110, 75, 85});
-        model.addRow(new Object[]{false, 10, 110, "Dipirona", "PainRelief", "Analgesico e antipiretico", 200, 85, 95});
-        
-        
-        try {
-              Produto produto = ProdutoRepository.getInstance().buscarPorCodigo(123456);
-              model.addRow(new Object[]{false, 11, produto.getCodigo(), produto.getNome(), 
-                  produto.getMarca(), produto.getDescricao(), produto.getQuantidadeEstoque(), produto.getValorEntrada(), produto.getValorSaida()});
-        } catch (Exception e) {
-            System.out.println("SEDADYGAIUFHPOIFHFIO");
+        if (table.isEditing()) {
+            table.getCellEditor().stopCellEditing();
         }
+        model.setRowCount(0);
         
+        Lista<Produto> lista = checkOrdenarPorNome.isSelected() ? produtoController.listaOrdenadaPorNome(): produtoController.lista();
         
+        for (int i = 0; i < lista.tamanho(); i++) {
+            model.addRow(ProdutoUtil.produtoToTableRow(lista.pegar(i), i+1));
+        }
     }
 
     /**
@@ -116,6 +108,7 @@ public class PanelProdutos extends javax.swing.JPanel {
         cmdEdit = new br.edu.ifs.farmacia.view.swing.table.ButtonAction();
         cmdDelete = new br.edu.ifs.farmacia.view.swing.table.ButtonAction();
         cmdNew = new br.edu.ifs.farmacia.view.swing.table.ButtonAction();
+        checkOrdenarPorNome = new javax.swing.JCheckBox();
 
         scroll.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
@@ -166,6 +159,13 @@ public class PanelProdutos extends javax.swing.JPanel {
             }
         });
 
+        checkOrdenarPorNome.setText("Ordenar por Nome");
+        checkOrdenarPorNome.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                checkOrdenarPorNomeActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout panelLayout = new javax.swing.GroupLayout(panel);
         panel.setLayout(panelLayout);
         panelLayout.setHorizontalGroup(
@@ -175,9 +175,12 @@ public class PanelProdutos extends javax.swing.JPanel {
             .addGroup(panelLayout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addGroup(panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(panelLayout.createSequentialGroup()
+                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(46, 46, 46)
+                        .addComponent(checkOrdenarPorNome))
                     .addComponent(lbTitle))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 503, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 334, Short.MAX_VALUE)
                 .addComponent(cmdNew, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cmdEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -193,7 +196,9 @@ public class PanelProdutos extends javax.swing.JPanel {
                         .addGap(10, 10, 10)
                         .addComponent(lbTitle)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(checkOrdenarPorNome)))
                     .addGroup(panelLayout.createSequentialGroup()
                         .addGap(31, 31, 31)
                         .addGroup(panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -241,7 +246,7 @@ public class PanelProdutos extends javax.swing.JPanel {
                     produtoController.cadastrar(create.getData());
                     pc.closePopup();
                     Notifications.getInstance().show(Notifications.Type.SUCCESS, "Produto foi adicionado");
-
+                    loadData();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -251,8 +256,13 @@ public class PanelProdutos extends javax.swing.JPanel {
         }), option);
     }//GEN-LAST:event_cmdNewActionPerformed
 
+    private void checkOrdenarPorNomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkOrdenarPorNomeActionPerformed
+        loadData();
+    }//GEN-LAST:event_checkOrdenarPorNomeActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox checkOrdenarPorNome;
     private br.edu.ifs.farmacia.view.swing.table.ButtonAction cmdDelete;
     private br.edu.ifs.farmacia.view.swing.table.ButtonAction cmdEdit;
     private br.edu.ifs.farmacia.view.swing.table.ButtonAction cmdNew;

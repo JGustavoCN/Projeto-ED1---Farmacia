@@ -7,28 +7,51 @@ import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import java.awt.Font;
 import java.awt.GridLayout;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 import raven.popup.GlassPanePopup;
 import raven.toast.Notifications;
 
 public class MainForm extends javax.swing.JFrame {
 
-    //private final Usuario usuario;
     PanelProdutos panelProdutos;
+    MainController mainController;
 
     public MainForm() {
-        //usuario = LoginController.getInstance().getUsuarioLogado();
         initComponents();
         init();
     }
 
+    private static void modificarJFrame(JFrame frame) {
+
+        GlassPanePopup.install(frame);
+        Notifications.getInstance().setJFrame(frame);
+
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                //Código a ser executado antes de fechar o programa
+                
+                int resposta = JOptionPane.showConfirmDialog(frame, "Você realmente deseja sair?", "Confirmar Saída", JOptionPane.YES_NO_OPTION);
+
+                if (resposta == JOptionPane.YES_OPTION) {
+                    MainController.getInstance().salvarDados();
+                    frame.dispose(); // Fecha o JFrame
+                    System.exit(0);  // Encerra a aplicação
+                }
+            }
+        });
+    }
+
     private void init() {
-       
-        GlassPanePopup.install(this);
-        Notifications.getInstance().setJFrame(this);
+
+        mainController = MainController.getInstance();
         panelProdutos = new PanelProdutos();
         this.setLayout(new GridLayout());
-        this.add(new PanelProdutos());
+        this.add(panelProdutos);
     }
 
     @SuppressWarnings("unchecked")
@@ -54,18 +77,20 @@ public class MainForm extends javax.swing.JFrame {
 
     public static void start() {
         FlatRobotoFont.install();
-        
+
         //consertar o properties
         FlatLaf.registerCustomDefaultsSource("br.edu.ifs.farmacia.view.themes");
-        
+
         UIManager.put("defaultFont", new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 13));
         FlatMacLightLaf.setup();
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
-            MainForm loginForm = new MainForm();
-            MainController.getInstance().setTelaAtual(loginForm);
-            loginForm.setVisible(true);
+            MainForm mainForm = new MainForm();
+
+            modificarJFrame(mainForm);
+            MainController.getInstance().setTelaAtual(mainForm);
+            mainForm.setVisible(true);
 
         });
     }

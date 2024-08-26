@@ -25,8 +25,12 @@ public class ProdutoRepository implements Serializable {
         throw new ProdutoNaoEncontradoException("Produto com código " + codigo + " não encontrado.");
     }
 
+    public void salvarTodos(){
+        ProdutoDataManager.salvar(this);
+    }
+    
     public boolean salvar(Produto produto) throws ProdutoJaExisteException {
-        if (produtos.contem(produto)) {
+        if (produtos.contem(produto) ) {
             throw new ProdutoJaExisteException("Produto com código " + produto.getCodigo() + " já existe.");
         }
         return produtos.adicionar(produto);
@@ -53,12 +57,12 @@ public class ProdutoRepository implements Serializable {
         produtos = new Lista<>();
         // Exemplo de dados para criar um objeto Produto
         String nome = "Paracetamol";
-        int codigo = 123456;
+        int codigo = 123;
         String descricao = "Analgésico e antipirético usado para aliviar dor e febre.";
         String marca = "Farmácia ABC";
-        int valorEntrada = 1000; // R$ 10,00 convertido para centavos
-        int valorSaida = 2000; // R$ 20,00 convertido para centavos
-        int quantidadeEstoque = 100;
+        double valorEntrada = 10; // R$ 10,00 convertido para centavos
+        double valorSaida = 20; // R$ 20,00 convertido para centavos
+        int quantidadeEstoque = 10;
 
         // Cria o objeto Produto
         Produto produto = new Produto(nome, codigo, descricao, marca, valorEntrada, valorSaida, quantidadeEstoque);
@@ -68,7 +72,7 @@ public class ProdutoRepository implements Serializable {
     
     public static ProdutoRepository getInstance() {
         if (instance == null) {
-            instance = new ProdutoRepository();
+            instance = ProdutoDataManager.carregar();
         }
         
         return instance;

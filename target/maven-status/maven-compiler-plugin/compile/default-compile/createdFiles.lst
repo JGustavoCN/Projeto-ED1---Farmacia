@@ -1,4 +1,5 @@
 br\edu\ifs\farmacia\util\IndiceForaDoLimiteException.class
+br\edu\ifs\farmacia\view\component\PanelProdutos$4.class
 br\edu\ifs\farmacia\util\No.class
 br\edu\ifs\farmacia\model\login\TipoUsuario.class
 br\edu\ifs\farmacia\util\Pilha.class
@@ -16,6 +17,7 @@ br\edu\ifs\farmacia\view\swing\table\TableHeaderAlignment.class
 br\edu\ifs\farmacia\util\ProdutoJaExisteException.class
 br\edu\ifs\farmacia\view\component\PanelCover$1.class
 br\edu\ifs\farmacia\util\Fila.class
+br\edu\ifs\farmacia\view\MainForm$1.class
 br\edu\ifs\farmacia\util\Lista.class
 br\edu\ifs\farmacia\controller\MainController$MainControllerHolder.class
 br\edu\ifs\farmacia\repository\UsuarioRepository.class
@@ -25,6 +27,7 @@ br\edu\ifs\farmacia\view\swing\MyTextField.class
 br\edu\ifs\farmacia\persistence\ProdutoDataManager.class
 br\edu\ifs\farmacia\model\login\Usuario.class
 br\edu\ifs\farmacia\view\swing\table\ButtonAction.class
+br\edu\ifs\farmacia\util\ProdutoUtil.class
 br\edu\ifs\farmacia\view\swing\ButtonOutLine.class
 br\edu\ifs\farmacia\view\component\PanelCover.class
 br\edu\ifs\farmacia\util\ButtonClickListener.class
