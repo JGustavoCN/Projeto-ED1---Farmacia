@@ -12,7 +12,7 @@ public class ProdutoUtil {
             false, 
             rowNum, 
             produto.getCodigo(),
-            produto.getNome(), 
+            produto, 
             produto.getMarca(),
             produto.getDescricao(),
             produto.getQuantidadeEstoque(), 

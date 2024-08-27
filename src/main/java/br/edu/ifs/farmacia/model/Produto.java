@@ -24,7 +24,7 @@ public class Produto implements Serializable {
     }
 
     public Produto(String nome, int codigo, String descricao, String marca, double valorEntrada, double valorSaida, int quantidaDeEstoque) {
-        this.id = UUID.nameUUIDFromBytes((nome.trim()+marca.trim()).trim().toUpperCase().getBytes());
+        this.id = UUID.nameUUIDFromBytes((nome.trim() + marca.trim()).trim().toUpperCase().getBytes());
         this.nome = nome;
         this.codigo = codigo;
         this.descricao = descricao;
@@ -90,13 +90,15 @@ public class Produto implements Serializable {
         this.quantidaDeEstoque = quantidaDeEstoque;
     }
 
+    public UUID getId() {
+        return id;
+    }
+
     @Override
     public int hashCode() {
         int hash = 7;
         hash = 17 * hash + Objects.hashCode(this.id);
-        hash = 17 * hash + Objects.hashCode(this.nome);
         hash = 17 * hash + this.codigo;
-        hash = 17 * hash + Objects.hashCode(this.marca);
         return hash;
     }
 
@@ -112,21 +114,13 @@ public class Produto implements Serializable {
             return false;
         }
         final Produto other = (Produto) obj;
-        if (this.codigo != other.codigo) {
-            return false;
-        }
-        if (!this.nome.equalsIgnoreCase(other.nome)) {
-            return false;
-        }
-        if (!this.marca.equalsIgnoreCase(other.marca)) {
-            return false;
-        }
-        return this.id.compareTo(other.id) == 0;
+
+        return this.id.compareTo(other.id) == 0 || this.codigo == other.codigo;
     }
 
     @Override
     public String toString() {
-        return "Produto{" + "nome=" + nome + ", codigo=" + codigo + ", descricao=" + descricao + ", marca=" + marca + ", valorEntrada=" + valorEntrada + ", valorSaida=" + valorSaida + ", quantidaDeEstoque=" + quantidaDeEstoque + '}';
+        return nome;
     }
 
 }

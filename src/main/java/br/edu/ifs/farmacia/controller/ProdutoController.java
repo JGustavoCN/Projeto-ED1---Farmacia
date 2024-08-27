@@ -4,6 +4,7 @@ import br.edu.ifs.farmacia.model.Produto;
 import br.edu.ifs.farmacia.repository.ProdutoRepository;
 import br.edu.ifs.farmacia.util.Lista;
 import br.edu.ifs.farmacia.util.ProdutoJaExisteException;
+import br.edu.ifs.farmacia.util.ProdutoNaoEncontradoException;
 
 public class ProdutoController {
 
@@ -13,24 +14,20 @@ public class ProdutoController {
     private ProdutoController() {
         this.produtoRepository = ProdutoRepository.getInstance();
     }
-    public static ProdutoController getInstance(){
-        if(instance == null){
+
+    public static ProdutoController getInstance() {
+        if (instance == null) {
             instance = new ProdutoController();
         }
         return instance;
     }
-    
-    public void salvarDados(){
+
+    public void salvarDados() {
         produtoRepository.salvarTodos();
     }
 
-    public boolean cadastrar(Produto produto) {
-        try {
-            return produtoRepository.salvar(produto);
-        } catch (ProdutoJaExisteException e) {
-            System.out.println(e.getMessage());
-            return false;
-        }
+    public boolean cadastrar(Produto produto) throws ProdutoJaExisteException {
+        return produtoRepository.salvar(produto);
     }
 
     public Lista<Produto> lista() {
@@ -39,5 +36,16 @@ public class ProdutoController {
 
     public Lista<Produto> listaOrdenadaPorNome() {
         return produtoRepository.buscarTodosOrdenadoPorNome();
+    }
+
+    public void atualizar(Produto dataEdit) {
+        try {
+            Produto produto = produtoRepository.buscarPorCodigo(dataEdit.getCodigo());
+            produto.setValorEntrada(dataEdit.getValorEntrada());
+            produto.setValorSaida(dataEdit.getValorSaida());
+            produto.setQuantidadeEstoque(dataEdit.getQuantidadeEstoque());
+        } catch (ProdutoNaoEncontradoException ex) {
+            System.err.println(ex.getMessage());
+        }
     }
 }

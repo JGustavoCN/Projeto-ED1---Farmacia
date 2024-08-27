@@ -31,7 +31,7 @@ public class ProdutoRepository implements Serializable {
     
     public boolean salvar(Produto produto) throws ProdutoJaExisteException {
         if (produtos.contem(produto) ) {
-            throw new ProdutoJaExisteException("Produto com código " + produto.getCodigo() + " já existe.");
+            throw new ProdutoJaExisteException("Produto com código " + produto.getCodigo() + " ou com o id "+ produto.getId()+ " já existe.");
         }
         return produtos.adicionar(produto);
     }
@@ -60,8 +60,8 @@ public class ProdutoRepository implements Serializable {
         int codigo = 123;
         String descricao = "Analgésico e antipirético usado para aliviar dor e febre.";
         String marca = "Farmácia ABC";
-        double valorEntrada = 10; // R$ 10,00 convertido para centavos
-        double valorSaida = 20; // R$ 20,00 convertido para centavos
+        double valorEntrada = 10;
+        double valorSaida = 20; 
         int quantidadeEstoque = 10;
 
         // Cria o objeto Produto

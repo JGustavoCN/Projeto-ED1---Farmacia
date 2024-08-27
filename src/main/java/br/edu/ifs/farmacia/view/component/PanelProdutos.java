@@ -3,12 +3,16 @@ package br.edu.ifs.farmacia.view.component;
 import br.edu.ifs.farmacia.controller.ProdutoController;
 import br.edu.ifs.farmacia.model.Produto;
 import br.edu.ifs.farmacia.util.Lista;
+import br.edu.ifs.farmacia.util.ProdutoJaExisteException;
 import br.edu.ifs.farmacia.util.ProdutoUtil;
 import br.edu.ifs.farmacia.view.swing.table.CheckBoxTableHeaderRenderer;
 import br.edu.ifs.farmacia.view.swing.table.TableHeaderAlignment;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import javax.swing.table.DefaultTableModel;
+import raven.modal.ModalDialog;
+import raven.modal.Toast;
+import raven.modal.component.SimpleModalBorder;
 import raven.popup.DefaultOption;
 import raven.popup.GlassPanePopup;
 import raven.popup.component.SimplePopupBorder;
@@ -21,16 +25,13 @@ import raven.toast.Notifications;
 public class PanelProdutos extends javax.swing.JPanel {
 
     private final ProdutoController produtoController;
-    
-    
+
     public PanelProdutos() {
         produtoController = ProdutoController.getInstance();
         initComponents();
         init();
     }
-    
-   
-    
+
     private void init() {
 
         panel.putClientProperty(FlatClientProperties.STYLE, ""
@@ -82,12 +83,23 @@ public class PanelProdutos extends javax.swing.JPanel {
             table.getCellEditor().stopCellEditing();
         }
         model.setRowCount(0);
-        
-        Lista<Produto> lista = checkOrdenarPorNome.isSelected() ? produtoController.listaOrdenadaPorNome(): produtoController.lista();
-        
+
+        Lista<Produto> lista = checkOrdenarPorNome.isSelected() ? produtoController.listaOrdenadaPorNome() : produtoController.lista();
+
         for (int i = 0; i < lista.tamanho(); i++) {
-            model.addRow(ProdutoUtil.produtoToTableRow(lista.pegar(i), i+1));
+            model.addRow(ProdutoUtil.produtoToTableRow(lista.pegar(i), i + 1));
         }
+    }
+
+    private Lista<Produto> getSelectedData() {
+        final Lista<Produto> list = new Lista<>();
+        for (int i = 0; i < table.getRowCount(); i++) {
+            if ((boolean) table.getValueAt(i, 0)) {
+                Produto data = (Produto) table.getValueAt(i, 3);
+                list.adicionar(data);
+            }
+        }
+        return list;
     }
 
     /**
@@ -149,6 +161,11 @@ public class PanelProdutos extends javax.swing.JPanel {
         lbTitle.setText("PRODUTO");
 
         cmdEdit.setText("Editar");
+        cmdEdit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmdEditActionPerformed(evt);
+            }
+        });
 
         cmdDelete.setText("Deletar");
 
@@ -247,8 +264,9 @@ public class PanelProdutos extends javax.swing.JPanel {
                     pc.closePopup();
                     Notifications.getInstance().show(Notifications.Type.SUCCESS, "Produto foi adicionado");
                     loadData();
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } catch (ProdutoJaExisteException e) {
+                    Notifications.getInstance().show(Notifications.Type.INFO, "Produto já existe");
+                    System.err.println(e.getMessage());
                 }
             } else {
                 pc.closePopup();
@@ -259,6 +277,36 @@ public class PanelProdutos extends javax.swing.JPanel {
     private void checkOrdenarPorNomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkOrdenarPorNomeActionPerformed
         loadData();
     }//GEN-LAST:event_checkOrdenarPorNomeActionPerformed
+
+    private void cmdEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdEditActionPerformed
+        // TODO add your handling code here:
+        Lista<Produto> list = getSelectedData();
+        if (!list.estaVazia()) {
+            if (list.tamanho() == 1) {
+                Produto data = list.pegar(0);
+                PanelCreateProduto create = new PanelCreateProduto();
+                create.loadData(data);
+                SimpleModalBorder.Option[] options = new SimpleModalBorder.Option[]{
+                    new SimpleModalBorder.Option("Cancelar", SimpleModalBorder.CANCEL_OPTION),
+                    new SimpleModalBorder.Option("Atualizar", SimpleModalBorder.OK_OPTION)
+                };
+                ModalDialog.showModal(this, new SimpleModalBorder(create, "Editar Produto [" + data.getNome() + "]", options, (mc, i) -> {
+                    if (i == SimpleModalBorder.OK_OPTION) {
+                        // editar
+                        Produto dataEdit = create.getData();
+                        dataEdit.setCodigo(data.getCodigo());
+                        produtoController.atualizar(dataEdit);
+                        Toast.show(this, Toast.Type.SUCCESS, "Produto foi alterado");
+                        loadData();
+                    }
+                }));
+            } else {
+                Toast.show(this, Toast.Type.WARNING, "Please select only one employee");
+            }
+        } else {
+            Toast.show(this, Toast.Type.WARNING, "Por favor selecione pelo menos um produto");
+        }
+    }//GEN-LAST:event_cmdEditActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

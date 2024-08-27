@@ -15,6 +15,18 @@ public class PanelCreateProduto extends javax.swing.JPanel {
         initComponents();
     }
 
+    public void loadData(Produto data) {
+        if (data != null) {
+            txtCodigo.setValue(data.getCodigo());
+            txtNome.setText(data.getNome());
+            txtMarca.setText(data.getMarca());
+            txtValorEntrada.setValue(data.getValorEntrada());
+            txtValorSaida.setValue(data.getValorSaida());
+            txtQuantidade.setValue(data.getQuantidadeEstoque());
+            txtDescricao.setText(data.getDescricao());
+        }
+    }
+    
     public Produto getData() {
         // Obtém os valores dos campos da interface gráfica
         String nome = txtNome.getText().trim();
@@ -51,10 +63,10 @@ public class PanelCreateProduto extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         txtDescricao = new javax.swing.JTextArea();
         jLabel3 = new javax.swing.JLabel();
-        txtCodigo = new javax.swing.JTextField();
         txtQuantidade = new javax.swing.JFormattedTextField();
         txtValorSaida = new javax.swing.JFormattedTextField();
         jLabel13 = new javax.swing.JLabel();
+        txtCodigo = new javax.swing.JFormattedTextField();
 
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         jLabel1.setText("Nome");
@@ -89,6 +101,8 @@ public class PanelCreateProduto extends javax.swing.JPanel {
         jLabel13.setHorizontalAlignment(javax.swing.SwingConstants.TRAILING);
         jLabel13.setText("Quantidade");
 
+        txtCodigo.setFormatterFactory(new javax.swing.text.DefaultFormatterFactory(new javax.swing.text.NumberFormatter(new java.text.DecimalFormat("#0"))));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -116,22 +130,20 @@ public class PanelCreateProduto extends javax.swing.JPanel {
                                 .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
                                 .addGap(7, 7, 7)))
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtCodigo)
                             .addComponent(txtValorSaida, javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(txtValorEntrada)
                             .addComponent(txtMarca, javax.swing.GroupLayout.DEFAULT_SIZE, 288, Short.MAX_VALUE)
                             .addComponent(txtNome)
-                            .addComponent(txtQuantidade))))
+                            .addComponent(txtQuantidade)
+                            .addComponent(txtCodigo))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(46, 46, 46)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(jLabel3))
+                .addGap(49, 49, 49)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
                     .addComponent(txtCodigo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -181,7 +193,7 @@ public class PanelCreateProduto extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField txtCodigo;
+    private javax.swing.JFormattedTextField txtCodigo;
     private javax.swing.JTextArea txtDescricao;
     private javax.swing.JTextField txtMarca;
     private javax.swing.JTextField txtNome;

@@ -29,18 +29,16 @@ public class MainForm extends javax.swing.JFrame {
 
         GlassPanePopup.install(frame);
         Notifications.getInstance().setJFrame(frame);
-
+        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
                 //Código a ser executado antes de fechar o programa
-                
                 int resposta = JOptionPane.showConfirmDialog(frame, "Você realmente deseja sair?", "Confirmar Saída", JOptionPane.YES_NO_OPTION);
-
                 if (resposta == JOptionPane.YES_OPTION) {
                     MainController.getInstance().salvarDados();
                     frame.dispose(); // Fecha o JFrame
-                    System.exit(0);  // Encerra a aplicação
+                    //System.exit(0); // Remova esta linha para evitar o fechamento forçado
                 }
             }
         });
