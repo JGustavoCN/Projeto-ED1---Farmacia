@@ -2,16 +2,14 @@ package br.edu.ifs.farmacia.view;
 
 import br.edu.ifs.farmacia.controller.MainController;
 import br.edu.ifs.farmacia.view.component.PanelProdutos;
-import com.formdev.flatlaf.FlatLaf;
-import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
-import com.formdev.flatlaf.themes.FlatMacLightLaf;
-import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.UIManager;
+import javax.swing.JLabel;
+import javax.swing.border.EmptyBorder;
+import raven.modal.ModalDialog;
+import raven.modal.component.SimpleModalBorder;
 import raven.popup.GlassPanePopup;
 import raven.toast.Notifications;
 
@@ -33,13 +31,21 @@ public class MainForm extends javax.swing.JFrame {
         frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                //Código a ser executado antes de fechar o programa
-                int resposta = JOptionPane.showConfirmDialog(frame, "Você realmente deseja sair?", "Confirmar Saída", JOptionPane.YES_NO_OPTION);
-                if (resposta == JOptionPane.YES_OPTION) {
-                    MainController.getInstance().salvarDados();
-                    frame.dispose(); // Fecha o JFrame
-                    //System.exit(0); // Remova esta linha para evitar o fechamento forçado
-                }
+
+                SimpleModalBorder.Option[] options = new SimpleModalBorder.Option[]{
+                    new SimpleModalBorder.Option("Sim", SimpleModalBorder.OK_OPTION),
+                    new SimpleModalBorder.Option("Não", SimpleModalBorder.CANCEL_OPTION)
+                };
+                JLabel label = new JLabel("Você realmente deseja sair?", JLabel.CENTER);
+                label.setBorder(new EmptyBorder(15, 15, 15, 15));
+                ModalDialog.showModal(frame, new SimpleModalBorder(label, "Sair", options, (mc, i) -> {
+                    if (i == SimpleModalBorder.OK_OPTION) {
+                        MainController.getInstance().salvarDados();
+                        frame.dispose();
+                        System.exit(0);
+                    }
+                }));
+
             }
         });
     }
@@ -74,18 +80,9 @@ public class MainForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     public static void start() {
-        FlatRobotoFont.install();
-
-        //consertar o properties
-        FlatLaf.registerCustomDefaultsSource("br.edu.ifs.farmacia.view.themes");
-
-        UIManager.put("defaultFont", new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 13));
-        FlatMacLightLaf.setup();
-
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
             MainForm mainForm = new MainForm();
-
             modificarJFrame(mainForm);
             MainController.getInstance().setTelaAtual(mainForm);
             mainForm.setVisible(true);

@@ -38,14 +38,12 @@ public class ProdutoController {
         return produtoRepository.buscarTodosOrdenadoPorNome();
     }
 
-    public void atualizar(Produto dataEdit) {
-        try {
-            Produto produto = produtoRepository.buscarPorCodigo(dataEdit.getCodigo());
-            produto.setValorEntrada(dataEdit.getValorEntrada());
-            produto.setValorSaida(dataEdit.getValorSaida());
-            produto.setQuantidadeEstoque(dataEdit.getQuantidadeEstoque());
-        } catch (ProdutoNaoEncontradoException ex) {
-            System.err.println(ex.getMessage());
-        }
+    public void atualizar(Produto dataEdit) throws ProdutoNaoEncontradoException {
+        produtoRepository.atualizar(dataEdit);
+    }
+
+    public void atualizarPrecoDeTodos(Lista<Produto> lista, double valor) throws ProdutoNaoEncontradoException {
+        produtoRepository.atualizarPrecoDeTodos(lista, valor);
+
     }
 }

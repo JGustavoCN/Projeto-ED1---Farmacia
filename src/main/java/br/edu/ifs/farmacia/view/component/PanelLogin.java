@@ -8,7 +8,11 @@ import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Font;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -35,6 +39,8 @@ public class PanelLogin extends javax.swing.JLayeredPane {
         informacaoPanel.putClientProperty(FlatClientProperties.STYLE, ""
                 + "arc:5;"
                 + "background:$Table.background");
+        
+        
 
     }
 
@@ -58,7 +64,7 @@ public class PanelLogin extends javax.swing.JLayeredPane {
                 + "como administradores e funcionários. As principais funcionalidades incluem o controle de estoque, "
                 + "registro de vendas, e geração de relatórios. A persistência de dados é feita por meio da serialização de objetos, "
                 + "garantindo que as informações sejam mantidas entre sessões sem a necessidade de um banco de dados.</div></html>");
-        
+
         informacoesLabel.setFont(new Font("sansserif", Font.PLAIN, 16));
         informacoesLabel.putClientProperty(FlatClientProperties.STYLE, ""
                 + "arc:25;"
@@ -79,7 +85,7 @@ public class PanelLogin extends javax.swing.JLayeredPane {
         MyTextField txtUser = new MyTextField();
         txtUser.setPrefixIcon(ImageLoader.loadImage("user.png"));
         txtUser.setHint("Nome");
-        
+
         loginPanel.add(txtUser, "w 60%");
         MyPasswordField txtPass = new MyPasswordField();
         txtPass.setPrefixIcon(ImageLoader.loadImage("pass.png"));
@@ -97,10 +103,27 @@ public class PanelLogin extends javax.swing.JLayeredPane {
         cmd.addActionListener(loginEvent);
         cmd.setText("Entrar");
         loginPanel.add(cmd, "w 40%, h 40");
-        cmd.addActionListener(e -> {
-            this.userName = txtUser.getText().trim();
-            this.password = String.valueOf(txtPass.getPassword()).trim();
+        cmd.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                userName = txtUser.getText().trim();
+                password = String.valueOf(txtPass.getPassword()).trim();
+            }
         });
+        
+        
+        // Adicionar o ActionListener para os campos de texto
+        ActionListener enterAction = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Executar ação do botão quando Enter é pressionado
+                cmd.doClick();
+            }
+        };
+
+        txtUser.addActionListener(enterAction);
+        txtPass.addActionListener(enterAction);
+        
     }
 
     public void trocarPanel(boolean show) {

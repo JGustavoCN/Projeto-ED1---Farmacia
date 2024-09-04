@@ -1,15 +1,45 @@
 package br.edu.ifs.farmacia.view.component;
 
 import br.edu.ifs.farmacia.controller.ProdutoController;
+import br.edu.ifs.farmacia.controller.VendaController;
 import br.edu.ifs.farmacia.model.Produto;
+import br.edu.ifs.farmacia.model.Venda;
+import br.edu.ifs.farmacia.report.FieldReportEstoque;
+import br.edu.ifs.farmacia.report.FieldReportVendas;
+import br.edu.ifs.farmacia.report.ParameterReportEstoque;
+import br.edu.ifs.farmacia.report.ParameterReportVendas;
+import br.edu.ifs.farmacia.report.ReportManager;
 import br.edu.ifs.farmacia.util.Lista;
 import br.edu.ifs.farmacia.util.ProdutoJaExisteException;
+import br.edu.ifs.farmacia.util.ProdutoNaoEncontradoException;
+import br.edu.ifs.farmacia.util.ProdutoNaoPodeSerVendidoException;
 import br.edu.ifs.farmacia.util.ProdutoUtil;
+import br.edu.ifs.farmacia.util.VendaJaExisteException;
+import br.edu.ifs.farmacia.util.VendaUtil;
 import br.edu.ifs.farmacia.view.swing.table.CheckBoxTableHeaderRenderer;
 import br.edu.ifs.farmacia.view.swing.table.TableHeaderAlignment;
 import com.formdev.flatlaf.FlatClientProperties;
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatLaf;
+import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import com.formdev.flatlaf.themes.FlatMacDarkLaf;
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.FileNotFoundException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
+import net.sf.jasperreports.engine.JRException;
 import raven.modal.ModalDialog;
 import raven.modal.Toast;
 import raven.modal.component.SimpleModalBorder;
@@ -25,14 +55,45 @@ import raven.toast.Notifications;
 public class PanelProdutos extends javax.swing.JPanel {
 
     private final ProdutoController produtoController;
+    private final VendaController vendaController;
 
     public PanelProdutos() {
         produtoController = ProdutoController.getInstance();
+        this.vendaController = VendaController.getInstance();
         initComponents();
         init();
+
     }
 
     private void init() {
+
+        switchDarkLight.putClientProperty(FlatClientProperties.STYLE, ""
+                + "arc:999;"
+                + "borderWidth:0;"
+                + "focusWidth:0;"
+                + "innerFocusWidth:0");
+        switchDarkLight.addActionListener(new ActionListener() {
+
+            private final ScheduledExecutorService scheduled = Executors.newScheduledThreadPool(1);
+            private ScheduledFuture<?> scheduledFuture;
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (scheduledFuture != null) {
+                    scheduledFuture.cancel(true);
+                }
+                scheduledFuture = scheduled.schedule(() -> {
+                    changeThemes(switchDarkLight.isSelected());
+                }, 500, TimeUnit.MILLISECONDS);
+            }
+        });
+        
+        try {
+            ReportManager.getInstance().compileReport();
+        } catch (JRException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, e+" - "+e.getMessage());
+        }
 
         panel.putClientProperty(FlatClientProperties.STYLE, ""
                 + "arc:25;"
@@ -102,6 +163,26 @@ public class PanelProdutos extends javax.swing.JPanel {
         return list;
     }
 
+    private void changeThemes(boolean dark) {
+        if (FlatLaf.isLafDark() != dark) {
+            if (!dark) {
+                EventQueue.invokeLater(() -> {
+                    FlatAnimatedLafChange.showSnapshot();
+                    FlatIntelliJLaf.setup();
+                    FlatLaf.updateUI();
+                    FlatAnimatedLafChange.hideSnapshotWithAnimation();
+                });
+            } else {
+                EventQueue.invokeLater(() -> {
+                    FlatAnimatedLafChange.showSnapshot();
+                    FlatMacDarkLaf.setup();
+                    FlatLaf.updateUI();
+                    FlatAnimatedLafChange.hideSnapshotWithAnimation();
+                });
+            }
+        }
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -111,6 +192,7 @@ public class PanelProdutos extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        darkLightSwitchIcon = new br.edu.ifs.farmacia.view.swing.DarkLightSwitchIcon();
         panel = new javax.swing.JPanel();
         scroll = new javax.swing.JScrollPane();
         table = new javax.swing.JTable();
@@ -121,6 +203,11 @@ public class PanelProdutos extends javax.swing.JPanel {
         cmdDelete = new br.edu.ifs.farmacia.view.swing.table.ButtonAction();
         cmdNew = new br.edu.ifs.farmacia.view.swing.table.ButtonAction();
         checkOrdenarPorNome = new javax.swing.JCheckBox();
+        cmdVender = new br.edu.ifs.farmacia.view.swing.table.ButtonAction();
+        lblRelatorios = new javax.swing.JLabel();
+        cmdRelatorioEstoque = new br.edu.ifs.farmacia.view.swing.table.ButtonAction();
+        cmdRelatorioVendas = new br.edu.ifs.farmacia.view.swing.table.ButtonAction();
+        switchDarkLight = new javax.swing.JToggleButton();
 
         scroll.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
@@ -183,6 +270,29 @@ public class PanelProdutos extends javax.swing.JPanel {
             }
         });
 
+        cmdVender.setText("Vender");
+        cmdVender.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmdVenderActionPerformed(evt);
+            }
+        });
+
+        lblRelatorios.setText("Relatórios:");
+
+        cmdRelatorioEstoque.setText("Estoque");
+        cmdRelatorioEstoque.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmdRelatorioEstoqueActionPerformed(evt);
+            }
+        });
+
+        cmdRelatorioVendas.setText("Vendas");
+        cmdRelatorioVendas.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmdRelatorioVendasActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout panelLayout = new javax.swing.GroupLayout(panel);
         panel.setLayout(panelLayout);
         panelLayout.setHorizontalGroup(
@@ -192,42 +302,51 @@ public class PanelProdutos extends javax.swing.JPanel {
             .addGroup(panelLayout.createSequentialGroup()
                 .addGap(20, 20, 20)
                 .addGroup(panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lbTitle)
                     .addGroup(panelLayout.createSequentialGroup()
-                        .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(46, 46, 46)
-                        .addComponent(checkOrdenarPorNome))
-                    .addComponent(lbTitle))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 334, Short.MAX_VALUE)
-                .addComponent(cmdNew, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cmdEdit, javax.swing.GroupLayout.PREFERRED_SIZE, 99, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cmdDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(38, 38, 38))
+                        .addComponent(txtSearch, javax.swing.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(checkOrdenarPorNome, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(cmdNew, javax.swing.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cmdEdit, javax.swing.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cmdDelete, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cmdVender, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
+                        .addGap(18, 18, 18)
+                        .addComponent(lblRelatorios, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(cmdRelatorioEstoque, javax.swing.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(cmdRelatorioVendas, javax.swing.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE)))
+                .addGap(20, 20, 20))
         );
         panelLayout.setVerticalGroup(
             panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, panelLayout.createSequentialGroup()
-                .addGroup(panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(panelLayout.createSequentialGroup()
-                        .addGap(10, 10, 10)
-                        .addComponent(lbTitle)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(checkOrdenarPorNome)))
-                    .addGroup(panelLayout.createSequentialGroup()
-                        .addGap(31, 31, 31)
-                        .addGroup(panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(cmdEdit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(cmdDelete, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(cmdNew, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(10, 10, 10)
+                .addComponent(lbTitle)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtSearch, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(checkOrdenarPorNome)
+                    .addComponent(cmdEdit, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmdDelete, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmdNew, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmdVender, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cmdRelatorioVendas, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblRelatorios)
+                    .addComponent(cmdRelatorioEstoque, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(15, 15, 15)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
                 .addComponent(scroll, javax.swing.GroupLayout.DEFAULT_SIZE, 433, Short.MAX_VALUE)
                 .addGap(10, 10, 10))
         );
+
+        switchDarkLight.setIcon(darkLightSwitchIcon);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -237,11 +356,17 @@ public class PanelProdutos extends javax.swing.JPanel {
                 .addGap(52, 52, 52)
                 .addComponent(panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(38, 38, 38))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(switchDarkLight, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(76, 76, 76))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(47, 47, 47)
+                .addContainerGap()
+                .addComponent(switchDarkLight, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(40, 40, 40))
         );
@@ -281,6 +406,7 @@ public class PanelProdutos extends javax.swing.JPanel {
     private void cmdEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdEditActionPerformed
         // TODO add your handling code here:
         Lista<Produto> list = getSelectedData();
+        Produto produtoMaisBarato = ProdutoUtil.produtoMaisBarato(list);
         if (!list.estaVazia()) {
             if (list.tamanho() == 1) {
                 Produto data = list.pegar(0);
@@ -292,21 +418,168 @@ public class PanelProdutos extends javax.swing.JPanel {
                 };
                 ModalDialog.showModal(this, new SimpleModalBorder(create, "Editar Produto [" + data.getNome() + "]", options, (mc, i) -> {
                     if (i == SimpleModalBorder.OK_OPTION) {
-                        // editar
-                        Produto dataEdit = create.getData();
-                        dataEdit.setCodigo(data.getCodigo());
-                        produtoController.atualizar(dataEdit);
-                        Toast.show(this, Toast.Type.SUCCESS, "Produto foi alterado");
-                        loadData();
+                        try {
+                            // editar
+                            Produto dataEdit = create.getData();
+                            if (!(dataEdit.getValorSaida() < 0 || dataEdit.getValorEntrada() < 0 || dataEdit.getQuantidadeEstoque() < 0)) {
+                                dataEdit.setCodigo(data.getCodigo());
+                                produtoController.atualizar(dataEdit);
+                                Toast.show(this, Toast.Type.SUCCESS, "Produto foi alterado");
+                            }
+
+                            if (dataEdit.getValorSaida() < 0) {
+                                Toast.show(this,
+                                        Toast.Type.ERROR, "Alteração invalida: Produto " + produtoMaisBarato.getNome() + " não pode ser vendido por ->  " + dataEdit.getValorSaida());
+                            }
+                            if (dataEdit.getValorEntrada() < 0) {
+                                Toast.show(this,
+                                        Toast.Type.ERROR, "Alteração invalida: Produto " + produtoMaisBarato.getNome() + " não pode ter sido comprado por ->  " + dataEdit.getValorEntrada());
+                            }
+                            if (dataEdit.getQuantidadeEstoque() < 0) {
+                                Toast.show(this,
+                                        Toast.Type.ERROR, "Alteração invalida: Produto " + produtoMaisBarato.getNome() + ", quantidade não pode ser negativa ->  " + dataEdit.getQuantidadeEstoque());
+                            }
+
+                            loadData();
+                        } catch (ProdutoNaoEncontradoException ex) {
+                            System.err.println(ex.getMessage());
+                        }
                     }
+
                 }));
             } else {
-                Toast.show(this, Toast.Type.WARNING, "Please select only one employee");
+                PanelProductPriceEditor editar = new PanelProductPriceEditor(list);
+                SimpleModalBorder.Option[] options = new SimpleModalBorder.Option[]{
+                    new SimpleModalBorder.Option("Cancelar", SimpleModalBorder.CANCEL_OPTION),
+                    new SimpleModalBorder.Option("Atualizar", SimpleModalBorder.OK_OPTION)
+                };
+                ModalDialog.showModal(this, new SimpleModalBorder(editar, "Editar o valor de " + list.tamanho() + " produtos", options, (mc, i) -> {
+
+                    if (produtoMaisBarato.getValorSaida() + editar.getValor() < 0) {
+                        Toast.show(this,
+                                Toast.Type.ERROR, "Alteração invalida: Produto " + produtoMaisBarato.getNome() + " vale " + produtoMaisBarato.getValorSaida());
+                    } else if (i == SimpleModalBorder.OK_OPTION) {
+                        try {
+                            // editar Todos os valores 
+                            produtoController.atualizarPrecoDeTodos(list, editar.getValor());
+                            Toast.show(this, Toast.Type.SUCCESS, "Produtos foram alterados");
+                            loadData();
+                        } catch (ProdutoNaoEncontradoException ex) {
+                            System.err.println(ex.getMessage());
+                        }
+                    }
+
+                }));
             }
         } else {
             Toast.show(this, Toast.Type.WARNING, "Por favor selecione pelo menos um produto");
         }
     }//GEN-LAST:event_cmdEditActionPerformed
+
+    private void cmdVenderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdVenderActionPerformed
+        // TODO add your handling code here
+        Lista<Produto> list = getSelectedData();
+        Lista<Venda> vendidos = new Lista();
+        for (int i = 0; i < list.tamanho(); i++) {
+            try {
+                vendidos.adicionar(new Venda(list.pegar(i)));
+            } catch (ProdutoNaoPodeSerVendidoException ex) {
+                System.err.println(ex.getMessage());
+                Toast.show(this, Toast.Type.ERROR, ex.getMessage());
+            }
+        }
+        if (!vendidos.estaVazia()) {
+
+            PanelVenda venda = new PanelVenda(vendidos);
+            SimpleModalBorder.Option[] options = new SimpleModalBorder.Option[]{
+                new SimpleModalBorder.Option("Cancelar", SimpleModalBorder.CANCEL_OPTION),
+                new SimpleModalBorder.Option("Vender", SimpleModalBorder.OK_OPTION)
+            };
+            ModalDialog.showModal(this, new SimpleModalBorder(venda, "Produtos vendidos [" + vendidos.tamanho() + "]", options, (mc, i) -> {
+                if (i == SimpleModalBorder.OK_OPTION) {
+                    try {
+                        vendaController.cadastrarTodos(venda.getVendas());
+                    } catch (VendaJaExisteException e) {
+                        System.err.println(e.getMessage());
+                    }
+
+                    Toast.show(this, Toast.Type.SUCCESS, "Produtos foram vendidos");
+
+                    loadData();
+                }
+            }));
+        } else {
+            Toast.show(this, Toast.Type.WARNING, "Por favor selecione pelo menos um produto válido para venda");
+        }
+    }//GEN-LAST:event_cmdVenderActionPerformed
+
+    private void cmdRelatorioVendasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdRelatorioVendasActionPerformed
+        try {
+            NumberFormat nf = new DecimalFormat("$ #,##0.##");
+            List<FieldReportVendas> fields = new ArrayList<>();
+            Lista<Venda> vendas = vendaController.lista();
+            for (int i = 0; i < vendas.tamanho(); i++) {
+                Venda data = vendas.pegar(i);
+                fields.add(new FieldReportVendas(
+                        Integer.toString(i + 1),
+                        Integer.toString(data.getProduto().getCodigo()),
+                        data.getProduto().getNome(),
+                        data.getProduto().getMarca(),
+                        nf.format(data.getValorVendido()),
+                        Integer.toString(data.getQuantidade()),
+                        nf.format(data.getTotal())
+                ));
+            }
+            double totalVendido = VendaUtil.totalVendido(vendas);
+            int totalQuantidade = VendaUtil.totalQuantidade(vendas);
+            
+            ParameterReportVendas dataprint = new ParameterReportVendas(
+                    nf.format(totalVendido),
+                    Integer.toString(totalQuantidade),
+                    fields
+            );
+            ReportManager.getInstance().printReportVendas(dataprint);
+        } catch (JRException e) {
+            e.printStackTrace();
+            Toast.show(this, Toast.Type.WARNING, "Não foi possivel mostrar o relatório de vendas");
+        }
+    }//GEN-LAST:event_cmdRelatorioVendasActionPerformed
+
+    private void cmdRelatorioEstoqueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmdRelatorioEstoqueActionPerformed
+        try {
+            NumberFormat nf = new DecimalFormat("$ #,##0.##");
+            List<FieldReportEstoque> fields = new ArrayList<>();
+            Lista<Produto> produtos = produtoController.lista();
+            for (int i = 0; i < produtos.tamanho(); i++) {
+                Produto data = produtos.pegar(i);
+                fields.add(new FieldReportEstoque(
+                        Integer.toString(i + 1),
+                        Integer.toString(data.getCodigo()),
+                        data.getNome(),
+                        data.getMarca(),
+                        data.getDescricao(),
+                        Integer.toString(data.getQuantidadeEstoque()),
+                        nf.format(data.getValorEntrada()),
+                        nf.format(data.getValorSaida())
+                ));
+            }
+            double totalEntrada = ProdutoUtil.totalEntrada(produtos);
+            double totalSaida = ProdutoUtil.totalSaida(produtos);
+            int totalQuantidade = ProdutoUtil.totalQuantidade(produtos);
+            double totalLucro = ProdutoUtil.totalLucro(produtos);
+            ParameterReportEstoque dataprint = new ParameterReportEstoque(
+                    nf.format(totalEntrada),
+                    nf.format(totalSaida),
+                    nf.format(totalLucro),
+                    Integer.toString(totalQuantidade),
+                    fields
+            );
+            ReportManager.getInstance().printReportEstoque(dataprint);
+        } catch (JRException e) {
+            e.printStackTrace();
+            Toast.show(this, Toast.Type.WARNING, "Não foi possivel mostrar o relatório de estoque");
+        }
+    }//GEN-LAST:event_cmdRelatorioEstoqueActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -314,10 +587,16 @@ public class PanelProdutos extends javax.swing.JPanel {
     private br.edu.ifs.farmacia.view.swing.table.ButtonAction cmdDelete;
     private br.edu.ifs.farmacia.view.swing.table.ButtonAction cmdEdit;
     private br.edu.ifs.farmacia.view.swing.table.ButtonAction cmdNew;
+    private br.edu.ifs.farmacia.view.swing.table.ButtonAction cmdRelatorioEstoque;
+    private br.edu.ifs.farmacia.view.swing.table.ButtonAction cmdRelatorioVendas;
+    private br.edu.ifs.farmacia.view.swing.table.ButtonAction cmdVender;
+    private br.edu.ifs.farmacia.view.swing.DarkLightSwitchIcon darkLightSwitchIcon;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel lbTitle;
+    private javax.swing.JLabel lblRelatorios;
     private javax.swing.JPanel panel;
     private javax.swing.JScrollPane scroll;
+    private javax.swing.JToggleButton switchDarkLight;
     private javax.swing.JTable table;
     private javax.swing.JTextField txtSearch;
     // End of variables declaration//GEN-END:variables

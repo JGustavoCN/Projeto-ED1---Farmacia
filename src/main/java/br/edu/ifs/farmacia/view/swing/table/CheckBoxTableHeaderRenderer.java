@@ -13,6 +13,7 @@ import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.TableModelEvent;
 import javax.swing.table.TableCellRenderer;
 
 /**
@@ -50,42 +51,22 @@ public class CheckBoxTableHeaderRenderer extends JCheckBox implements TableCellR
         });
 
         table.getModel().addTableModelListener((tme) -> {
-            if (tme.getColumn() == column) {
+            if (tme.getColumn() == column || tme.getType() == TableModelEvent.DELETE) {
                 checkRow();
             }
         });
     }
 
     private void checkRow() {
-        if (table == null || column < 0 || column >= table.getColumnCount()) {
-            System.err.println("Tabela ou coluna inválida.");
-            return;
-        }
-
-        if (table.getRowCount() == 0) {
-            putClientProperty(FlatClientProperties.SELECTED_STATE, null);
-            setSelected(false);
-            table.getTableHeader().repaint();
-            return;
-        }
-
-        Boolean initValue = (Boolean) table.getValueAt(0, column);
-        if (initValue == null) {
-            putClientProperty(FlatClientProperties.SELECTED_STATE, null);
-            setSelected(false);
-            table.getTableHeader().repaint();
-            return;
-        }
-
+        boolean initValue = table.getRowCount() == 0 ? false : (boolean) table.getValueAt(0, column);
         for (int i = 1; i < table.getRowCount(); i++) {
-            Boolean v = (Boolean) table.getValueAt(i, column);
-            if (v == null || !initValue.equals(v)) {
+            boolean v = (boolean) table.getValueAt(i, column);
+            if (initValue != v) {
                 putClientProperty(FlatClientProperties.SELECTED_STATE, FlatClientProperties.SELECTED_STATE_INDETERMINATE);
                 table.getTableHeader().repaint();
                 return;
             }
         }
-
         putClientProperty(FlatClientProperties.SELECTED_STATE, null);
         setSelected(initValue);
         table.getTableHeader().repaint();

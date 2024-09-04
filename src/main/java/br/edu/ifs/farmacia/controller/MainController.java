@@ -11,6 +11,7 @@ public class MainController {
     
     private JFrame telaAtual;
     private final ProdutoController produtoController = ProdutoController.getInstance();
+    private final VendaController vendaController = VendaController.getInstance();
     
     public void logar(boolean respostaLoginController){
         if (respostaLoginController == false) return;
@@ -28,6 +29,7 @@ public class MainController {
     
     public void salvarDados(){
         produtoController.salvarDados();
+        vendaController.salvarDados();
     }
     
     private MainController() {

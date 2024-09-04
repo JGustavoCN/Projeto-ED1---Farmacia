@@ -20,9 +20,6 @@ public class Produto implements Serializable {
     private double valorSaida;
     private int quantidaDeEstoque;
 
-    public Produto() {
-    }
-
     public Produto(String nome, int codigo, String descricao, String marca, double valorEntrada, double valorSaida, int quantidaDeEstoque) {
         this.id = UUID.nameUUIDFromBytes((nome.trim() + marca.trim()).trim().toUpperCase().getBytes());
         this.nome = nome;
@@ -34,6 +31,11 @@ public class Produto implements Serializable {
         this.quantidaDeEstoque = quantidaDeEstoque;
     }
 
+    public boolean isVendivel(int quantidadeVendida){
+    
+        return quantidaDeEstoque>= quantidadeVendida;
+    }
+    
     public String getNome() {
         return nome;
     }

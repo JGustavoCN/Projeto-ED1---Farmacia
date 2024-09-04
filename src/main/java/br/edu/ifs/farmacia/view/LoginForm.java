@@ -6,12 +6,18 @@ import br.edu.ifs.farmacia.view.component.PanelCover;
 import br.edu.ifs.farmacia.view.component.PanelLogin;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.fonts.inter.FlatInterFont;
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import com.formdev.flatlaf.FlatLaf;
+import com.formdev.flatlaf.fonts.roboto.FlatRobotoFont;
+import com.formdev.flatlaf.intellijthemes.FlatDarkPurpleIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatAtomOneDarkIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatMaterialDarkerIJTheme;
+import com.formdev.flatlaf.intellijthemes.materialthemeuilite.FlatSolarizedDarkIJTheme;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
-import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
@@ -66,10 +72,10 @@ public class LoginForm extends javax.swing.JFrame {
     }
     
     
-    private void login() {
+    public void login() {
         final String userName = loginPanel.getUserName();
-        final String userPassworde = loginPanel.getPassword();
-        boolean resposta = LoginController.getInstance().logar(userName, userPassworde);
+        final String userPassword = loginPanel.getPassword();
+        boolean resposta = LoginController.getInstance().logar(userName, userPassword);
         MainController.getInstance().logar(resposta);
     }
     
@@ -166,9 +172,28 @@ public class LoginForm extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     public static void main(String args[]) {
-        FlatInterFont.install();
-        UIManager.put("defaultFont", new Font(FlatInterFont.FAMILY, Font.PLAIN, 13));
-        FlatDarculaLaf.setup();
+        FlatRobotoFont.install();
+        // Caminho para o arquivo FlatLaf.properties
+//        try {
+//            File file = new File("src\\main\\resources\\themes\\FlatLaf.properties");
+//
+//            // Verifica se o arquivo existe
+//            if (file.exists()) {
+//
+//                // Registra o local customizado para o FlatLaf
+//                FlatLaf.registerCustomDefaultsSource(file);
+//
+//                // Inicia a aplicação ou outras operações
+//                System.out.println("Tema customizado carregado: " + file);
+//            } else {
+//                System.err.println("O arquivo não foi encontrado: " + file.getAbsolutePath());
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+        FlatLaf.registerCustomDefaultsSource("themes");
+        UIManager.put("defaultFont", new Font(FlatRobotoFont.FAMILY, Font.PLAIN, 13));
+        FlatIntelliJLaf.setup();
         java.awt.EventQueue.invokeLater(() -> {
             LoginForm loginForm = new LoginForm();
             MainController.getInstance().setTelaAtual(loginForm);

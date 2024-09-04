@@ -15,7 +15,7 @@ public class ProdutoRepository implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private Lista<Produto> produtos;
-    
+
     public Produto buscarPorCodigo(int codigo) throws ProdutoNaoEncontradoException {
         for (int i = 0; i < produtos.tamanho(); i++) {
             if (produtos.pegar(i).getCodigo() == codigo) {
@@ -25,19 +25,40 @@ public class ProdutoRepository implements Serializable {
         throw new ProdutoNaoEncontradoException("Produto com código " + codigo + " não encontrado.");
     }
 
-    public void salvarTodos(){
+    public void salvarTodos() {
         ProdutoDataManager.salvar(this);
     }
-    
+
     public boolean salvar(Produto produto) throws ProdutoJaExisteException {
-        if (produtos.contem(produto) ) {
-            throw new ProdutoJaExisteException("Produto com código " + produto.getCodigo() + " ou com o id "+ produto.getId()+ " já existe.");
+        if (produtos.contem(produto)) {
+            throw new ProdutoJaExisteException("Produto com código " + produto.getCodigo() + " ou com o id " + produto.getId() + " já existe.");
         }
         return produtos.adicionar(produto);
     }
 
     public Lista<Produto> buscarTodos() {
         return produtos;
+    }
+
+    public void atualizar(Produto dataEdit) throws ProdutoNaoEncontradoException {
+
+        Produto produto = buscarPorCodigo(dataEdit.getCodigo());
+        produto.setValorEntrada(dataEdit.getValorEntrada());
+        produto.setValorSaida(dataEdit.getValorSaida());
+        produto.setQuantidadeEstoque(dataEdit.getQuantidadeEstoque());
+
+    }
+
+    public void atualizarPrecoDeTodos(Lista<Produto> lista, double valor) throws ProdutoNaoEncontradoException {
+        for (int i = 0; i < lista.tamanho(); i++) {
+            Produto produto = buscarPorCodigo(lista.pegar(i).getCodigo());
+            produto.setValorSaida(lista.pegar(i).getValorSaida() + valor);
+        }
+    }
+
+    public void atualizarPreco(Produto produto, double valor) throws ProdutoNaoEncontradoException {
+        Produto produtoEncontrado = buscarPorCodigo(produto.getCodigo());
+        produto.setValorSaida(produtoEncontrado.getValorSaida() + valor);
     }
 
     public Lista<Produto> buscarTodosOrdenadoPorNome() {
@@ -52,7 +73,7 @@ public class ProdutoRepository implements Serializable {
 
         return produtosOrdenados;
     }
-    
+
     private ProdutoRepository() {
         produtos = new Lista<>();
         // Exemplo de dados para criar um objeto Produto
@@ -61,7 +82,7 @@ public class ProdutoRepository implements Serializable {
         String descricao = "Analgésico e antipirético usado para aliviar dor e febre.";
         String marca = "Farmácia ABC";
         double valorEntrada = 10;
-        double valorSaida = 20; 
+        double valorSaida = 20;
         int quantidadeEstoque = 10;
 
         // Cria o objeto Produto
@@ -69,12 +90,12 @@ public class ProdutoRepository implements Serializable {
 
         produtos.adicionar(produto);
     }
-    
+
     public static ProdutoRepository getInstance() {
         if (instance == null) {
             instance = ProdutoDataManager.carregar();
         }
-        
+
         return instance;
     }
     private static ProdutoRepository instance;
